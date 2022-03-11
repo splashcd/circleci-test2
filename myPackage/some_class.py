@@ -22,4 +22,5 @@ class SomeClass:
         return None
 
     def echo_me(self, arg1: str) -> str:
+        # Some comment
         return f"{arg1} {arg1}"
