@@ -1,0 +1,56 @@
+# Use the latest 2.1 version of CircleCI pipeline process engine.
+# See: https://circleci.com/docs/2.0/configuration-reference
+version: 2.1
+
+orbs:
+  python: circleci/python@2.0.2
+
+jobs:
+  pre_commit:
+    executor: python/default
+    steps:
+      - run:
+          name: "Check for hotfix branch: << pipeline.git.branch >>"
+          command: |
+            echo "Check for hotfix branch: << pipeline.git.branch>> ..."
+      # Branches starting with "hotfix-", skip container smoke test
+      - checkout
+      - python/install-packages:
+          pkg-manager: pip
+      - python/install-packages:
+          pip-dependency-file: requirements.dev.txt
+          pkg-manager: pip
+      - when:
+          condition:
+            matches:
+              pattern: "^(?i)hotfix-.*"
+              value: << pipeline.git.branch >>
+          steps:
+            - run:
+                name: "[SKIPPED] Hotfix found matching branch: << pipeline.git.branch >>"
+                command: |
+                  echo "Hotfix branch found matching for << pipeline.git.branch >>. Skip pre-commit."
+      # Branches not starting with "hotfix-", run container smoke test
+      - when:
+          condition:
+            not:
+              matches:
+                pattern: "^(?i)hotfix-.*"
+                value: << pipeline.git.branch >>
+          steps:
+            - run:
+                name: Pre-Commit
+                command: |
+                  pre-commit run -a
+  say_hi:
+    executor: python/default
+    steps:
+      - run:
+          name: Say-Hi
+          command: echo "HELLO YOU"
+
+workflows:
+  Validate_Changes:
+    jobs:
+      - pre_commit
+      - say_hi
