@@ -3,7 +3,7 @@ class AppConfig:
     logging = "test"
 
     def __init__(self):
-        print("In AppConfig")
+        print("In AppConfig constructor")
 
 
 class DevConfig(AppConfig):
